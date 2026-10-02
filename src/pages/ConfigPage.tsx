@@ -9,6 +9,7 @@ import nexo from "../nexoClient";
 import ErrorState from "../components/ErrorState";
 import { api, type StoreConfig } from "../lib/api";
 import { DESIGN_OPTIONS } from "../lib/design-options";
+import { apiErrorMessage, useI18n } from "../i18n";
 
 const MIN = 1;
 const MAX = 999;
@@ -16,6 +17,8 @@ const MAX = 999;
 export default function ConfigPage() {
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const i18n = useI18n();
+  const { t } = i18n;
   const [value, setValue] = useState("");
   const [savedValue, setSavedValue] = useState("");
   const [design, setDesign] = useState(DESIGN_OPTIONS[0].value);
@@ -26,9 +29,9 @@ export default function ConfigPage() {
 
   // botão "voltar" no header do admin
   useEffect(() => {
-    navigateHeader(nexo, { goTo: "/", text: "Preços de atacado" });
+    navigateHeader(nexo, { goTo: "/", text: t("config.backLink") });
     return () => navigateHeaderRemove(nexo);
-  }, []);
+  }, [t]);
 
   const load = () => {
     api<StoreConfig>("/api/config")
@@ -63,13 +66,13 @@ export default function ConfigPage() {
       });
       setSavedValue(String(c.minQuantity));
       setSavedDesign(c.designOption);
-      addToast({ id: "config-saved", type: "success", text: "Configuração salva", duration: 4000 });
+      addToast({ id: "config-saved", type: "success", text: t("config.toast.saved"), duration: 4000 });
       navigate("/");
     } catch (err) {
       addToast({
         id: "config-error",
         type: "danger",
-        text: err instanceof Error ? err.message : "Não foi possível salvar",
+        text: apiErrorMessage(err, i18n, "config.toast.saveError"),
         duration: 8000,
       });
     } finally {
@@ -80,11 +83,11 @@ export default function ConfigPage() {
   return (
     <Page maxWidth="800px">
       <Page.Header
-        title="Configurar atacado"
+        title={t("config.title")}
         buttonStack={
           <Button appearance="primary" disabled={!valid || !dirty || saving || loading} onClick={save}>
             {saving ? <Spinner size="small" /> : <DisketteIcon />}
-            Salvar
+            {t("config.save")}
           </Button>
         }
       />
@@ -94,19 +97,16 @@ export default function ConfigPage() {
         ) : (
           <Box display="flex" flexDirection="column" gap="4">
             <Card>
-              <Card.Header title="Quantidade mínima" />
+              <Card.Header title={t("config.minQuantity.title")} />
               <Card.Body>
                 <Box display="flex" flexDirection="column" gap="4">
-                  <Text>
-                    O preço de atacado vale quando o carrinho tiver essa quantidade de unidades, somando só os produtos
-                    que têm preço de atacado. Produtos sem preço de atacado continuam com o preço normal.
-                  </Text>
+                  <Text>{t("config.minQuantity.text")}</Text>
                   {loading ? (
                     <Skeleton width="100%" height="4rem" />
                   ) : (
                     <FormField.Input
                       id="min-quantity"
-                      label="Unidades no carrinho"
+                      label={t("config.minQuantity.label")}
                       type="number"
                       inputMode="numeric"
                       min={MIN}
@@ -114,7 +114,7 @@ export default function ConfigPage() {
                       value={value}
                       onChange={(e) => setValue((e.target as HTMLInputElement).value)}
                       appearance={valid ? "none" : "danger"}
-                      helpText={valid ? "Ex.: com 3, o desconto aparece a partir de 3 unidades." : `Use um número inteiro de ${MIN} a ${MAX}.`}
+                      helpText={valid ? t("config.minQuantity.help") : t("config.minQuantity.invalid", { min: MIN, max: MAX })}
                       showHelpText
                     />
                   )}
@@ -122,10 +122,10 @@ export default function ConfigPage() {
               </Card.Body>
             </Card>
             <Card>
-              <Card.Header title="Modelo de exibição" />
+              <Card.Header title={t("config.design.title")} />
               <Card.Body>
                 <Box display="flex" flexDirection="column" gap="4">
-                  <Text>Escolha como o preço de atacado aparece para os clientes na sua loja.</Text>
+                  <Text>{t("config.design.text")}</Text>
                   {loading ? (
                     <Skeleton width="100%" height="4rem" />
                   ) : (
@@ -133,8 +133,8 @@ export default function ConfigPage() {
                       {DESIGN_OPTIONS.map((option) => (
                         <InteractiveList.RadioItem
                           key={option.value}
-                          title={option.title}
-                          description={option.description}
+                          title={t(option.titleKey)}
+                          description={t(option.descriptionKey)}
                           radio={{
                             name: "design-option",
                             value: String(option.value),

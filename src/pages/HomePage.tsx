@@ -30,13 +30,16 @@ import {
   type Variant,
   type WholesalePrice,
 } from "../lib/api";
-import { formatBRL, isValidPrice, toInputPrice } from "../lib/price";
+import { isValidPrice, toInputPrice } from "../lib/price";
+import { apiErrorMessage, useI18n } from "../i18n";
 
 type Edit = { productId: number; value: string };
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const i18n = useI18n();
+  const { t, tp, formatMoney } = i18n;
 
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("");
@@ -96,7 +99,8 @@ export default function HomePage() {
       .catch(() => setConfig(null));
   }, []);
 
-  const valueOf = (variantId: number) => edits[variantId]?.value ?? toInputPrice(saved[variantId]);
+  const valueOf = (variantId: number) =>
+    edits[variantId]?.value ?? toInputPrice(saved[variantId], i18n.decimalSeparator);
 
   const setValue = (productId: number, variantId: number, value: string) =>
     setEdits((prev) => ({ ...prev, [variantId]: { productId, value } }));
@@ -132,12 +136,12 @@ export default function HomePage() {
       });
       setEdits({});
       setConfig((c) => (c ? { ...c, hasWholesalePrices: c.hasWholesalePrices || items.some((i) => i.price) } : c));
-      addToast({ id: "wholesale-saved", type: "success", text: "Preços de atacado salvos", duration: 4000 });
+      addToast({ id: "wholesale-saved", type: "success", text: t("home.toast.saved"), duration: 4000 });
     } catch (err) {
       addToast({
         id: "wholesale-error",
         type: "danger",
-        text: err instanceof Error ? err.message : "Não foi possível salvar os preços",
+        text: apiErrorMessage(err, i18n, "home.toast.saveError"),
         duration: 8000,
       });
     } finally {
@@ -161,12 +165,13 @@ export default function HomePage() {
     try {
       await api("/api/setup", { method: "POST" });
       setConfig((c) => (c ? { ...c, ready: true } : c));
-      addToast({ id: "setup-ok", type: "success", text: "Configuração concluída", duration: 4000 });
-    } catch {
+      addToast({ id: "setup-ok", type: "success", text: t("home.toast.setupOk"), duration: 4000 });
+    } catch (err) {
+      console.error(err);
       addToast({
         id: "setup-error",
         type: "danger",
-        text: "Não foi possível concluir a configuração. Tente de novo em instantes.",
+        text: t("home.toast.setupError"),
         duration: 8000,
       });
     } finally {
@@ -180,20 +185,18 @@ export default function HomePage() {
 
   const subtitle = useMemo(
     () =>
-      config
-        ? `O desconto é aplicado quando o carrinho tiver ${config.minQuantity} ou mais unidades com preço de atacado.`
-        : "O desconto é aplicado quando o carrinho atinge a quantidade mínima de atacado.",
-    [config],
+      config ? t("home.subtitle.withMin", { count: config.minQuantity }) : t("home.subtitle.noMin"),
+    [config, t],
   );
 
   const priceInput = (product: Product, variant: Variant) => {
     const value = valueOf(variant.id);
     return (
       <Input
-        aria-label={`Preço de atacado de ${product.name} ${variant.name}`}
+        aria-label={t("home.priceInput.label", { product: product.name, variant: variant.name })}
         inputMode="decimal"
-        placeholder="0,00"
-        prefix="R$"
+        placeholder={i18n.pricePlaceholder}
+        prefix={i18n.currencySymbol}
         value={value}
         appearance={isValidPrice(value) ? "neutral" : "danger"}
         onChange={(e) => setValue(product.id, variant.id, e.target.value)}
@@ -204,7 +207,7 @@ export default function HomePage() {
   const applyLink = (product: Product) =>
     product.variants.length > 1 ? (
       <Link appearance="primary" onClick={() => applyToAll(product)}>
-        Repetir para todas as variantes
+        {t("home.applyToAll")}
       </Link>
     ) : null;
 
@@ -215,22 +218,22 @@ export default function HomePage() {
       return query ? (
         <EmptyMessage
           icon={<SearchIcon size={32} />}
-          title="Nenhum produto encontrado"
-          text="Revise o termo buscado ou limpe a busca para ver todos os produtos."
+          title={t("home.empty.search.title")}
+          text={t("home.empty.search.text")}
           actions={
             <Button appearance="neutral" onClick={() => setSearch("")}>
-              Limpar busca
+              {t("home.empty.search.action")}
             </Button>
           }
         />
       ) : (
         <EmptyMessage
           icon={<BoxPackedIcon size={32} />}
-          title="Sua loja ainda não tem produtos"
-          text="Cadastre produtos no admin da Nuvemshop e volte aqui para definir os preços de atacado."
+          title={t("home.empty.store.title")}
+          text={t("home.empty.store.text")}
           actions={
             <Button appearance="neutral" onClick={() => goTo(nexo, "/products/new")}>
-              Cadastrar produto
+              {t("home.empty.store.action")}
             </Button>
           }
         />
@@ -244,10 +247,10 @@ export default function HomePage() {
           <Table>
             <Table.Head>
               <Table.Row>
-                <Table.Cell as="th">Produto</Table.Cell>
-                <Table.Cell as="th">Variante</Table.Cell>
-                <Table.Cell as="th">Preço</Table.Cell>
-                <Table.Cell as="th">Preço de atacado</Table.Cell>
+                <Table.Cell as="th">{t("home.table.product")}</Table.Cell>
+                <Table.Cell as="th">{t("home.table.variant")}</Table.Cell>
+                <Table.Cell as="th">{t("home.table.price")}</Table.Cell>
+                <Table.Cell as="th">{t("home.table.wholesalePrice")}</Table.Cell>
               </Table.Row>
             </Table.Head>
             <Table.Body>
@@ -279,7 +282,7 @@ export default function HomePage() {
                           <Text>{variant.name}</Text>
                         </Table.Cell>
                         <Table.Cell>
-                          <Text>{formatBRL(variant.price)}</Text>
+                          <Text>{formatMoney(variant.price)}</Text>
                         </Table.Cell>
                         <Table.Cell>{priceInput(product, variant)}</Table.Cell>
                       </Table.Row>
@@ -305,7 +308,7 @@ export default function HomePage() {
                     {product.variants.map((variant) => (
                       <Box key={variant.id} display="flex" flexDirection="column" gap="1">
                         <Text fontSize="caption">
-                          {variant.name} · {formatBRL(variant.price)}
+                          {variant.name} · {formatMoney(variant.price)}
                         </Text>
                         {priceInput(product, variant)}
                       </Box>
@@ -330,17 +333,17 @@ export default function HomePage() {
   return (
     <Page maxWidth="1200px">
       <Page.Header
-        title="Definir preços de atacado"
+        title={t("home.title")}
         subtitle={subtitle}
         buttonStack={
           <>
             <Button appearance="neutral" onClick={goToConfig}>
               <CogIcon />
-              Configurar
+              {t("home.configure")}
             </Button>
             <Button appearance="primary" disabled={!pending || hasInvalid || saving} onClick={save}>
               {saving ? <Spinner size="small" /> : <DisketteIcon />}
-              {pending ? `Salvar (${pending})` : "Salvar"}
+              {pending ? t("home.saveCount", { count: pending }) : t("home.save")}
             </Button>
           </>
         }
@@ -351,39 +354,32 @@ export default function HomePage() {
             <Box display="flex" flexDirection="column" gap="4">
               <Input
                 type="search"
-                aria-label="Buscar produtos"
-                placeholder="Buscar por nome ou SKU"
+                aria-label={t("home.search.label")}
+                placeholder={t("home.search.placeholder")}
                 append={<SearchIcon />}
                 appendPosition="start"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
               {config && !config.ready && (
-                <Alert appearance="warning" title="Falta concluir a configuração">
+                <Alert appearance="warning" title={t("home.setupPending.title")}>
                   <Box display="flex" flexDirection="column" gap="2" alignItems="flex-start">
-                    <Text>
-                      A promoção de atacado ainda não foi criada na sua loja, então o desconto não aparece no carrinho.
-                    </Text>
+                    <Text>{t("home.setupPending.text")}</Text>
                     <Button appearance="neutral" disabled={fixingSetup} onClick={finishSetup}>
                       {fixingSetup && <Spinner size="small" />}
-                      Concluir configuração
+                      {t("home.setupPending.action")}
                     </Button>
                   </Box>
                 </Alert>
               )}
               {config?.ready && !config.hasWholesalePrices && !pending && (
-                <Alert appearance="primary" title="Comece definindo os preços de atacado">
-                  <Text>
-                    Digite o preço de atacado nas variantes que você quer vender no atacado e clique em Salvar. Quando o
-                    carrinho tiver {config.minQuantity} ou mais unidades desses produtos, o desconto é aplicado
-                    automaticamente, sem cupom.
-                  </Text>
+                <Alert appearance="primary" title={t("home.onboarding.title")}>
+                  <Text>{t("home.onboarding.text", { count: config.minQuantity })}</Text>
                 </Alert>
               )}
               {hasInvalid && (
                 <Text color="danger-textLow">
-                  Use só números com até 2 casas decimais, como 10,50. Para remover o preço de atacado, deixe o campo
-                  vazio.
+                  {t("home.invalidPrice", { example: `10${i18n.decimalSeparator}50` })}
                 </Text>
               )}
               {renderBody()}
@@ -393,18 +389,16 @@ export default function HomePage() {
       </Page.Body>
 
       <Modal open={confirmLeave} onDismiss={() => setConfirmLeave(false)}>
-        <Modal.Header title="Sair sem salvar?" />
+        <Modal.Header title={t("home.leave.title")} />
         <Modal.Body>
-          <Text>
-            Você tem {pending} {pending === 1 ? "alteração" : "alterações"} de preço que ainda não {pending === 1 ? "foi salva" : "foram salvas"}.
-          </Text>
+          <Text>{tp("home.leave.message", pending)}</Text>
         </Modal.Body>
         <Modal.Footer>
           <Button appearance="neutral" onClick={() => setConfirmLeave(false)}>
-            Continuar editando
+            {t("home.leave.keepEditing")}
           </Button>
           <Button appearance="danger" onClick={() => navigate("/config")}>
-            Sair sem salvar
+            {t("home.leave.confirm")}
           </Button>
         </Modal.Footer>
       </Modal>
