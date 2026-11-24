@@ -1,0 +1,7 @@
+# Cloudflare Workers (static assets): headers de todas as respostas. Este arquivo não é servido.
+# O admin só pode abrir dentro do admin da Nuvemshop (iframe): frame-ancestors só com os domínios dela.
+/*
+  Content-Security-Policy: frame-ancestors https://*.nuvemshop.com.br https://*.lojavirtualnuvem.com.br https://*.tiendanube.com https://*.mitiendanube.com https://*.nuvemshop.com
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=63072000

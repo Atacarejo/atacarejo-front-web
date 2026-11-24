@@ -1,0 +1,19 @@
+// Admin do Atacarejo no Cloudflare Workers: só os arquivos estáticos do build (dist/), sem código de servidor.
+// Deploy: `yarn deploy` (build + wrangler deploy).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "atacarejo-front-web",
+  // a conta da Cloudflare que tem o domínio nextcubeinc.com (o Custom Domain exige a zona na mesma conta)
+  "account_id": "dd0bdba54ae78b450cb825a3b59417ae",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // rotas do React Router (/config, ...) abertas direto caem no index.html
+    "not_found_handling": "single-page-application"
+  },
+  // Mesmo domínio de antes na Vercel: é a URL do app no Painel de parceiros e a origem liberada no CORS da
+  // API. Exige o domínio nesta conta e nenhum outro registro DNS com esse nome: com o CNAME antigo (Vercel)
+  // o deploy falha com o erro 100117.
+  // Headers (CSP frame-ancestors etc.): public/_headers.
+  "routes": [{ "pattern": "web.atacarejo.nextcubeinc.com", "custom_domain": true }]
+}

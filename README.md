@@ -1,32 +1,30 @@
-# React + TypeScript + Vite
+# atacarejo-front-web
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Admin do Atacarejo: a tela que o lojista abre dentro do admin da Nuvemshop (iframe, via Nexo).
+React + Vite. Chama a API (`atacarejo-turbo-api`) em `VITE_API_URL`, com o session token do Nexo.
 
-Currently, two official plugins are available:
+## Dev
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+yarn install
+cp .env.example .env
+yarn dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+No `.env`: `VITE_CLIENT_ID` (ID do app no Painel de parceiros) e `VITE_API_URL`. O dev abre em
+`http://localhost:5173`.
+
+## Produção: Cloudflare Workers (só arquivos estáticos)
+
+```bash
+yarn deploy
+```
+
+Roda `yarn build` e `wrangler deploy`.
+
+- `wrangler.jsonc`: serve o `dist/`, com fallback de SPA (`/config` aberto direto cai no `index.html`), no
+  domínio `web.atacarejo.nextcubeinc.com`
+- `public/_headers`: CSP `frame-ancestors` (só o admin da Nuvemshop abre o app num iframe), `nosniff` e
+  `Referrer-Policy`. O arquivo vai para o `dist/` e não é servido
+- `.env.production`: `VITE_CLIENT_ID` e `VITE_API_URL` do build de produção. Não são segredos: vão dentro
+  do JS público
