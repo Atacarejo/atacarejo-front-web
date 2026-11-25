@@ -28,3 +28,11 @@ Roda `yarn build` e `wrangler deploy`.
   `Referrer-Policy`. O arquivo vai para o `dist/` e não é servido
 - `.env.production`: `VITE_CLIENT_ID` e `VITE_API_URL` do build de produção. Não são segredos: vão dentro
   do JS público
+
+## Assinatura (cobrança pelo Asaas)
+
+- `/billing` (`src/pages/BillingPage.tsx`): situação, assinar, pagar a fatura (nova aba; no app do celular, navegador do
+  aparelho via Nexo), atualizar os dados de cobrança, cancelar e o histórico.
+- `BillingGate`: com o atacado pausado por falta de pagamento, `/` e `/config` levam para `/billing`.
+- `BillingBanner`: aviso de teste grátis, primeira fatura, pagamento pendente e assinatura cancelada.
+- A situação vem de `GET /api/billing` (`src/lib/billing.ts`). Se a API falhar ou demorar, o app abre liberado.

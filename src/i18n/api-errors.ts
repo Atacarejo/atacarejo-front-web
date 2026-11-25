@@ -12,6 +12,14 @@ export const API_ERROR_KEYS: Readonly<Record<string, MessageKey>> = {
   nuvemshop_unavailable: "apiError.nuvemshopUnavailable",
   invalid_token: "apiError.invalidToken",
   unauthorized: "apiError.unauthorized",
+  invalid_billing_name: "apiError.invalidBillingName",
+  invalid_cpf_cnpj: "apiError.invalidCpfCnpj",
+  invalid_email: "apiError.invalidEmail",
+  billing_not_required: "apiError.billingNotRequired",
+  billing_busy: "apiError.billingBusy",
+  no_subscription: "apiError.noSubscription",
+  billing_unavailable: "apiError.billingUnavailable",
+  // invalid_billing_data fica de fora: em pt mostra a mensagem do Asaas ("O CPF/CNPJ informado é inválido.")
 };
 
 /**
@@ -24,7 +32,12 @@ export const API_ERROR_KEYS: Readonly<Record<string, MessageKey>> = {
  */
 export function apiErrorMessage(err: unknown, tr: Pick<Translator, "t" | "language">, fallback: MessageKey): string {
   if (!(err instanceof ApiRequestError)) return tr.t(fallback);
+  const message = baseMessage(err, tr, fallback);
+  // 5xx: o código do erro ajuda o suporte a achar o log
+  return err.status >= 500 && err.requestId ? `${message} (${tr.t("apiError.requestId", { id: err.requestId })})` : message;
+}
 
+function baseMessage(err: ApiRequestError, tr: Pick<Translator, "t" | "language">, fallback: MessageKey): string {
   const key = err.code !== null && Object.hasOwn(API_ERROR_KEYS, err.code) ? API_ERROR_KEYS[err.code] : undefined;
   if (key) return tr.t(key);
 

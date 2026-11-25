@@ -2,12 +2,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { navigateHeader, navigateHeaderRemove } from "@tiendanube/nexo";
-import { Box, Button, Card, Skeleton, Spinner, Text, useToast } from "@nimbus-ds/components";
+import { Box, Button, Card, Modal, Skeleton, Spinner, Tag, Text, useToast } from "@nimbus-ds/components";
 import { FormField, InteractiveList, Page } from "@nimbus-ds/patterns";
 import { DisketteIcon } from "@nimbus-ds/icons";
 import nexo from "../nexoClient";
 import ErrorState from "../components/ErrorState";
 import { api, type StoreConfig } from "../lib/api";
+import { billingStatusInfo, billingVisible, useBilling } from "../lib/billing";
 import { DESIGN_OPTIONS } from "../lib/design-options";
 import { apiErrorMessage, useI18n } from "../i18n";
 
@@ -26,6 +27,8 @@ export default function ConfigPage() {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { billing } = useBilling();
+  const [confirmLeave, setConfirmLeave] = useState(false);
 
   // botão "voltar" no header do admin
   useEffect(() => {
@@ -93,7 +96,8 @@ export default function ConfigPage() {
       />
       <Page.Body>
         {failed ? (
-          <ErrorState onRetry={retry} />
+          // "Salvar" já é a ação primária da página
+          <ErrorState onRetry={retry} primary={false} />
         ) : (
           <Box display="flex" flexDirection="column" gap="4">
             <Card>
@@ -148,9 +152,41 @@ export default function ConfigPage() {
                 </Box>
               </Card.Body>
             </Card>
+            {billingVisible(billing) && (
+              <Card>
+                <Card.Header title={t("config.billing.title")} />
+                <Card.Body>
+                  <Box display="flex" flexDirection="column" gap="4" alignItems="flex-start">
+                    <Box display="flex" gap="2" alignItems="center" flexWrap="wrap">
+                      <Text fontWeight="bold">{t("billing.plan.name", { price: i18n.formatBRL(billing.price) })}</Text>
+                      <Tag appearance={billingStatusInfo(billing, i18n).appearance}>{billingStatusInfo(billing, i18n).label}</Tag>
+                    </Box>
+                    <Text>{billingStatusInfo(billing, i18n).text}</Text>
+                    <Button appearance="neutral" onClick={() => (dirty ? setConfirmLeave(true) : navigate("/billing"))}>
+                      {t("config.billing.manage")}
+                    </Button>
+                  </Box>
+                </Card.Body>
+              </Card>
+            )}
           </Box>
         )}
       </Page.Body>
+
+      <Modal open={confirmLeave} onDismiss={() => setConfirmLeave(false)}>
+        <Modal.Header title={t("config.leave.title")} />
+        <Modal.Body>
+          <Text>{t("config.leave.message")}</Text>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button appearance="neutral" onClick={() => setConfirmLeave(false)}>
+            {t("config.leave.keepEditing")}
+          </Button>
+          <Button appearance="danger" onClick={() => navigate("/billing")}>
+            {t("config.leave.confirm")}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Page>
   );
 }

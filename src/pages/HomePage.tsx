@@ -21,6 +21,7 @@ import {
 import { DataList, EmptyMessage, Page } from "@nimbus-ds/patterns";
 import { BoxPackedIcon, CogIcon, DisketteIcon, SearchIcon } from "@nimbus-ds/icons";
 import nexo from "../nexoClient";
+import BillingBanner from "../components/BillingBanner";
 import ErrorState from "../components/ErrorState";
 import {
   api,
@@ -52,7 +53,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmLeave, setConfirmLeave] = useState(false);
+  // destino de uma navegação parada pelo modal "Sair sem salvar?" (null = modal fechado)
+  const [leaveTo, setLeaveTo] = useState<string | null>(null);
 
   // busca com debounce; nova busca volta para a página 1
   useEffect(() => {
@@ -179,7 +181,8 @@ export default function HomePage() {
     }
   };
 
-  const goToConfig = () => (pending ? setConfirmLeave(true) : navigate("/config"));
+  // com preços não salvos, sair da tela (Configurar ou o aviso da assinatura) pede confirmação
+  const navigateSafely = (path: string) => (pending ? setLeaveTo(path) : navigate(path));
 
   const pageCount = data ? Math.max(1, Math.ceil(data.total / data.perPage)) : 1;
 
@@ -337,7 +340,7 @@ export default function HomePage() {
         subtitle={subtitle}
         buttonStack={
           <>
-            <Button appearance="neutral" onClick={goToConfig}>
+            <Button appearance="neutral" onClick={() => navigateSafely("/config")}>
               <CogIcon />
               {t("home.configure")}
             </Button>
@@ -349,6 +352,8 @@ export default function HomePage() {
         }
       />
       <Page.Body>
+        <Box display="flex" flexDirection="column" gap="4">
+        <BillingBanner onNavigate={navigateSafely} />
         <Card>
           <Card.Body>
             <Box display="flex" flexDirection="column" gap="4">
@@ -386,18 +391,19 @@ export default function HomePage() {
             </Box>
           </Card.Body>
         </Card>
+        </Box>
       </Page.Body>
 
-      <Modal open={confirmLeave} onDismiss={() => setConfirmLeave(false)}>
+      <Modal open={leaveTo !== null} onDismiss={() => setLeaveTo(null)}>
         <Modal.Header title={t("home.leave.title")} />
         <Modal.Body>
           <Text>{tp("home.leave.message", pending)}</Text>
         </Modal.Body>
         <Modal.Footer>
-          <Button appearance="neutral" onClick={() => setConfirmLeave(false)}>
+          <Button appearance="neutral" onClick={() => setLeaveTo(null)}>
             {t("home.leave.keepEditing")}
           </Button>
-          <Button appearance="danger" onClick={() => navigate("/config")}>
+          <Button appearance="danger" onClick={() => leaveTo && navigate(leaveTo)}>
             {t("home.leave.confirm")}
           </Button>
         </Modal.Footer>
