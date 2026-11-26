@@ -51,3 +51,16 @@ export function formatMoney(value: string | null, locale: string, currency: stri
     return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   }
 }
+
+/**
+ * Desconto do preço de atacado sobre o preço normal, em % inteiro (ex.: 20). null se não dá para calcular
+ * (campo vazio ou inválido, produto sem preço). Negativo = o atacado está mais caro que o preço normal.
+ */
+export function discountPercent(price: string | null, input: string): number | null {
+  const regular = Number(price);
+  const text = input.trim().replace(",", ".");
+  if (!text || !isValidPrice(input) || !Number.isFinite(regular) || regular <= 0) return null;
+  const wholesale = Number(text);
+  if (!Number.isFinite(wholesale) || wholesale <= 0) return null;
+  return Math.round((1 - wholesale / regular) * 100);
+}

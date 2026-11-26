@@ -29,9 +29,13 @@ export default function App() {
       // o idioma cai no Nexo e em "es"; a assinatura, em null = app liberado).
       // iAmReady é chamado pelo NexoSync, depois de assinar a navegação do admin.
       .then(async () => {
-        detectMobile();
-        // a assinatura tem timeout próprio: lenta ou fora, o app abre liberado e o provider tenta de novo
-        const [store, billing] = await Promise.all([loadStoreLocale(), loadBilling({ timeoutMs: 5000 })]);
+        // a assinatura tem timeout próprio: lenta ou fora, o app abre liberado e o provider tenta de novo. O
+        // celular é detectado antes de montar as páginas (elas mostram o "voltar" no app do celular)
+        const [store, billing] = await Promise.all([
+          loadStoreLocale(),
+          loadBilling({ timeoutMs: 5000 }),
+          detectMobile(),
+        ]);
         setState({ status: "ready", store, billing });
       })
       .catch((err) => {
@@ -60,13 +64,27 @@ export default function App() {
     <ErrorBoundary nexo={nexo}>
       <I18nProvider store={state.store}>
         <BillingProvider initial={state.billing}>
-          <ToastProvider>
+          <ToastProvider offset="high">
             <BrowserRouter>
               <NexoSync />
               <Routes>
                 {/* sem pagamento (atacado pausado), as telas levam para a assinatura */}
-                <Route path="/" element={<BillingGate><HomePage /></BillingGate>} />
-                <Route path="/config" element={<BillingGate><ConfigPage /></BillingGate>} />
+                <Route
+                  path="/"
+                  element={
+                    <BillingGate>
+                      <HomePage />
+                    </BillingGate>
+                  }
+                />
+                <Route
+                  path="/config"
+                  element={
+                    <BillingGate>
+                      <ConfigPage />
+                    </BillingGate>
+                  }
+                />
                 <Route path="/billing" element={<BillingPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
