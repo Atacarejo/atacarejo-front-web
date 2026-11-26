@@ -1,7 +1,7 @@
 // Tela principal: o resumo (produtos com atacado, a regra e a assinatura) e a tabela de preços, com a busca e o
 // filtro em cima. Cada variante tem o input do preço de atacado e o desconto que ele dá. As alterações ficam numa
 // barra de salvar fixa no rodapé. No celular a tabela vira Data List (a homologação não aceita tabela no mobile).
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { goTo } from "@tiendanube/nexo";
 import {
@@ -78,8 +78,12 @@ export default function HomePage() {
     return () => clearTimeout(t);
   }, [search, query]);
 
+  // número da última busca: a resposta de uma busca antiga (outro filtro, página ou termo) não sobrescreve a nova
+  const latestLoad = useRef(0);
+
   // busca a página atual; quem dispara a recarga liga o "loading" antes (changePage, retry, busca, filtro)
   const load = useCallback(async () => {
+    const request = ++latestLoad.current;
     try {
       const params = new URLSearchParams({ page: String(page) });
       if (query) params.set("q", query);
@@ -91,14 +95,16 @@ export default function HomePage() {
         ? await api<WholesalePrice[]>(`/api/wholesale?variant_ids=${variantIds.join(",")}`)
         : [];
 
+      if (request !== latestLoad.current) return;
       setSaved((prev) => ({ ...prev, ...Object.fromEntries(prices.map((p) => [p.variantId, p.price])) }));
       setData(res);
       setFailed(false);
     } catch (err) {
+      if (request !== latestLoad.current) return;
       console.error(err);
       setFailed(true);
     } finally {
-      setLoading(false);
+      if (request === latestLoad.current) setLoading(false);
     }
   }, [page, query, filter]);
 

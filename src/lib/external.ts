@@ -12,16 +12,20 @@ export function isMobileApp(): boolean {
   return mobile;
 }
 
-/** Descobre uma vez, logo depois do connect, se o admin está no app do celular. */
-export function detectMobile(): void {
-  getIsMobileDevice(nexo).then(
-    (value) => {
+/**
+ * Descobre uma vez, logo depois do connect, se o admin está no app do celular. Resolve quando sabe, ou depois de
+ * `timeoutMs` (admin que não responde: segue como web), para o App esperar antes de montar as páginas.
+ */
+export function detectMobile(timeoutMs = 1500): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, timeoutMs);
+    const done = (value: boolean) => {
       mobile = value;
-    },
-    () => {
-      mobile = false;
-    },
-  );
+      clearTimeout(timer);
+      resolve();
+    };
+    getIsMobileDevice(nexo).then(done, () => done(false));
+  });
 }
 
 /** onClick de um link externo (target="_blank" rel="noopener noreferrer"): no celular, vai para o navegador do aparelho. */
