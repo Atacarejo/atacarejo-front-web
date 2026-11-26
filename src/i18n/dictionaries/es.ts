@@ -72,6 +72,8 @@ export const es: Dictionary = {
   "home.empty.search.title": "No se encontraron productos",
   "home.empty.search.text": "Revisa el término buscado o borra la búsqueda para ver todos los productos.",
   "home.empty.search.action": "Borrar búsqueda",
+  "home.list.truncated":
+    "Es posible que la lista no muestre todos los productos: en catálogos grandes, la búsqueda y los filtros revisan solo los primeros 2.000.",
   "home.empty.store.title": "Tu tienda todavía no tiene productos",
   "home.empty.store.text":
     "Agrega productos en el administrador de Tiendanube y vuelve aquí para definir los precios mayoristas.",
@@ -163,7 +165,7 @@ export const es: Dictionary = {
   "billing.how.todayPaid": "Hoy: primera mensualidad",
   "billing.how.todayPaidText": "{price}. El precio mayorista vuelve a funcionar apenas se acredite el pago.",
   "billing.how.refund": "7 días para arrepentirte",
-  "billing.how.refundText": "¿Cancelaste dentro de los 7 días del primer pago? Te devolvemos todo.",
+  "billing.how.refundText": "¿Cancelaste dentro de los 7 días del primer pago de la tienda? Te devolvemos todo. Vale una vez por tienda.",
   "billing.form.customerEdit": "Editar",
   "billing.form.ctaCardLater": "Suscribirme con tarjeta",
   "billing.form.ctaPixLater": "Suscribirme con Pix",

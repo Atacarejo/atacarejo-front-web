@@ -72,6 +72,8 @@ export const en: Dictionary = {
   "home.empty.search.title": "No products found",
   "home.empty.search.text": "Check your search term or clear the search to see all products.",
   "home.empty.search.action": "Clear search",
+  "home.list.truncated":
+    "This list may not show every product: in large catalogs, search and filters only look at the first 2,000.",
   "home.empty.store.title": "Your store doesn't have any products yet",
   "home.empty.store.text": "Add products in the Tiendanube admin and come back here to set wholesale prices.",
   "home.empty.store.action": "Add product",
@@ -162,7 +164,7 @@ export const en: Dictionary = {
   "billing.how.todayPaid": "Today: first monthly payment",
   "billing.how.todayPaidText": "{price}. Wholesale prices work again as soon as the payment clears.",
   "billing.how.refund": "7 days to change your mind",
-  "billing.how.refundText": "Canceled within 7 days of the first payment? You get everything back.",
+  "billing.how.refundText": "Canceled within 7 days of your store's first payment? You get everything back. Once per store.",
   "billing.form.customerEdit": "Edit",
   "billing.form.ctaCardLater": "Subscribe by card",
   "billing.form.ctaPixLater": "Subscribe with Pix",

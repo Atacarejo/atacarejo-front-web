@@ -73,6 +73,8 @@ export const pt = {
   "home.empty.search.title": "Nenhum produto encontrado",
   "home.empty.search.text": "Revise o termo buscado ou limpe a busca para ver todos os produtos.",
   "home.empty.search.action": "Limpar busca",
+  "home.list.truncated":
+    "A lista pode não mostrar todos os produtos: em catálogos grandes, a busca e os filtros olham só os primeiros 2.000.",
   "home.empty.store.title": "Sua loja ainda não tem produtos",
   "home.empty.store.text":
     "Cadastre produtos no admin da Nuvemshop e volte aqui para definir os preços de atacado.",
@@ -164,7 +166,7 @@ export const pt = {
   "billing.how.todayPaid": "Hoje: primeira mensalidade",
   "billing.how.todayPaidText": "{price}. O atacado volta a funcionar assim que o pagamento cair.",
   "billing.how.refund": "7 dias para desistir",
-  "billing.how.refundText": "Cancelou em até 7 dias do primeiro pagamento? Devolvemos tudo.",
+  "billing.how.refundText": "Cancelou em até 7 dias do primeiro pagamento da loja? Devolvemos tudo. Vale uma vez por loja.",
   "billing.form.customerEdit": "Editar",
   "billing.form.ctaCardLater": "Assinar com cartão",
   "billing.form.ctaPixLater": "Assinar com Pix",

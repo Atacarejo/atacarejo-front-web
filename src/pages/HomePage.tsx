@@ -365,6 +365,21 @@ export default function HomePage() {
     }
 
     if (data.products.length === 0) {
+      // parou no limite de produtos percorridos (catálogo grande): não dá para afirmar que não há nenhum
+      if (data.truncated) {
+        return (
+          <EmptyMessage
+            icon={<SearchIcon size={32} />}
+            title={t("home.empty.search.title")}
+            text={t("home.list.truncated")}
+            actions={
+              <Button appearance="neutral" onClick={() => (filter !== "all" ? changeFilter("all") : setSearch(""))}>
+                {filter !== "all" ? t("home.empty.filter.action") : t("home.empty.search.action")}
+              </Button>
+            }
+          />
+        );
+      }
       if (filter !== "all") {
         return (
           <EmptyMessage
@@ -549,6 +564,11 @@ export default function HomePage() {
                   </Text>
                 )}
                 {renderList()}
+                {!loading && !failed && data?.truncated && data.products.length > 0 && (
+                  <Text fontSize="caption" color="neutral-textLow">
+                    {t("home.list.truncated")}
+                  </Text>
+                )}
               </Box>
             </Card.Body>
           </Card>

@@ -74,7 +74,14 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export type Variant = { id: number; name: string; price: string | null; sku: string | null; stock: number | null };
 export type Product = { id: number; name: string; image: string | null; variants: Variant[] };
-export type ProductsResponse = { products: Product[]; total: number; page: number; perPage: number };
+export type ProductsResponse = {
+  products: Product[];
+  total: number;
+  page: number;
+  perPage: number;
+  /** busca por variante ou filtro que parou no limite de produtos percorridos: pode haver mais resultados */
+  truncated?: boolean;
+};
 export type WholesalePrice = { productId: number; variantId: number; price: string };
 /** GET /api/store: região da loja, para o admin se adaptar (idioma e moeda). */
 export type StoreInfo = { language: string | null; country: string | null; currency: string | null };
