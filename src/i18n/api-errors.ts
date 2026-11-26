@@ -19,7 +19,11 @@ export const API_ERROR_KEYS: Readonly<Record<string, MessageKey>> = {
   billing_busy: "apiError.billingBusy",
   no_subscription: "apiError.noSubscription",
   billing_unavailable: "apiError.billingUnavailable",
-  // invalid_billing_data fica de fora: em pt mostra a mensagem do Asaas ("O CPF/CNPJ informado é inválido.")
+  invalid_payment_method: "apiError.invalidPaymentMethod",
+  refund_unavailable: "apiError.refundUnavailable",
+  subscription_canceling: "apiError.subscriptionCanceling",
+  // a mensagem do Stripe vem em inglês: o texto é nosso (o campo recusado vai em params.field)
+  invalid_billing_data: "apiError.invalidBillingData",
 };
 
 /**

@@ -60,7 +60,7 @@ export default function App() {
     <ErrorBoundary nexo={nexo}>
       <I18nProvider store={state.store}>
         <BillingProvider initial={state.billing}>
-          <ToastProvider>
+          <ToastProvider offset="high">
             <BrowserRouter>
               <NexoSync />
               <Routes>
